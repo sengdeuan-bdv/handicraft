@@ -1,0 +1,55 @@
+name: Run Supabase migrations
+
+# ສ້າງ/ອັບເດດຕາຕະລາງອັດຕະໂນມັດ ທຸກຄັ້ງທີ່ push ໄຟລ໌ໃນ supabase/migrations/
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**.sql'
+      - '.github/workflows/db-migrate.yml'
+  workflow_dispatch:        # ກົດ run ດ້ວຍມືໄດ້ຈາກແທັບ Actions
+
+concurrency:
+  group: db-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install psql
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+
+      - name: Apply migrations in order
+        env:
+          # ຕັ້ງໃນ GitHub → Settings → Secrets and variables → Actions
+          # ຄ່າ: Supabase → Project Settings → Database → Connection string → URI
+          #      (ໃຊ້ Session pooler ຫຼື Direct connection, ໃສ່ລະຫັດຖານຂໍ້ມູນຂອງທ່ານ)
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::ຍັງບໍ່ໄດ້ຕັ້ງ secret SUPABASE_DB_URL"
+            exit 1
+          fi
+          for f in $(ls supabase/migrations/*.sql | sort); do
+            echo "──────── $f"
+            psql "$DATABASE_URL" \
+              --set ON_ERROR_STOP=1 \
+              --single-transaction \
+              -f "$f"
+          done
+          echo "✅ ຕາຕະລາງທັງໝົດຖືກສ້າງ/ອັບເດດແລ້ວ"
+
+      - name: Verify tables
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          psql "$DATABASE_URL" --set ON_ERROR_STOP=1 -c "
+            select table_name, table_type
+            from information_schema.tables
+            where table_schema = 'public'
+            order by table_type, table_name;"

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ລະບົບບັນທຶກສິນຄ້າຫັດຖະກຳ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%236b4a30'/><text x='50' y='72' font-size='62' fill='%23fffdf8' text-anchor='middle' font-family='serif'>ຕ</text></svg>">
+</head>
+<body>
+
+<!-- ══ 1. ກຳລັງໂຫຼດ ═══════════════════════════════════════════════════════ -->
+<div id="screen-loading" class="center-screen">
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    <p style="color:var(--muted);font-size:14px">ກຳລັງໂຫຼດ…</p>
+  </div>
+</div>
+
+<!-- ══ 2. ໜ້າຕັ້ງຄ່າ (ຖ້າຍັງບໍ່ມີ URL / anon key) ═══════════════════════ -->
+<div id="screen-setup" class="center-screen" hidden>
+  <div class="auth-card">
+    <div class="brand-mark">ຕ</div>
+    <h1>ຕັ້ງຄ່າການເຊື່ອມຕໍ່</h1>
+    <p>ໃສ່ຂໍ້ມູນຈາກ Supabase → Project Settings → API</p>
+    <div id="setup-alert" class="alert err"></div>
+    <div class="field">
+      <label for="cfg-url">Project URL</label>
+      <input id="cfg-url" type="url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="cfg-key">anon / public key</label>
+      <input id="cfg-key" type="text" placeholder="eyJhbGciOi… ຫຼື sb_publishable_…" autocomplete="off">
+    </div>
+    <button id="cfg-save" class="btn btn-block" style="margin-top:8px">ບັນທຶກ ແລະ ເຊື່ອມຕໍ່</button>
+    <div class="note">
+      ຄ່ານີ້ຈະຖືກເກັບໄວ້ໃນ browser ນີ້ເທົ່ານັ້ນ.<br>
+      ຢາກໃຫ້ຄົງທີ່ → ໃສ່ໃນໄຟລ໌ <code>assets/config.js</code>.<br>
+      ⚠️ ໃຊ້ <strong>anon key</strong> ເທົ່ານັ້ນ — ຫ້າມໃຊ້ service_role key.
+    </div>
+  </div>
+</div>
+
+<!-- ══ 3. ໜ້າເຂົ້າສູ່ລະບົບ ════════════════════════════════════════════════ -->
+<div id="screen-login" class="center-screen" hidden>
+  <div class="auth-card">
+    <div class="brand-mark">ຕ</div>
+    <h1>ລະບົບບັນທຶກສິນຄ້າຫັດຖະກຳ</h1>
+    <p>ເຂົ້າສູ່ລະບົບເພື່ອບັນທຶກ ແລະ ເບິ່ງຂໍ້ມູນ</p>
+
+    <div id="login-alert" class="alert err"></div>
+    <div id="login-ok" class="alert ok"></div>
+
+    <button id="btn-github" class="btn btn-block btn-github">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01
+        1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95
+        0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.42 7.42 0 0 1 2-.27c.68 0
+        1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0
+        3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01
+        8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+      </svg>
+      ເຂົ້າສູ່ລະບົບດ້ວຍ GitHub
+    </button>
+
+    <div class="divider">ຫຼື</div>
+
+    <div class="field">
+      <label for="login-email">ອີເມວ (ຮັບລິ້ງເຂົ້າລະບົບ)</label>
+      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <button id="btn-magic" class="btn ghost btn-block">ສົ່ງລິ້ງເຂົ້າລະບົບໄປອີເມວ</button>
+
+    <div class="note">
+      ຜູ້ໃຊ້ໃໝ່ຈະໄດ້ສິດ <strong>staff</strong> ໂດຍປະລິຍາຍ.<br>
+      ອີເມວທີ່ຢູ່ໃນລາຍຊື່ admin ຈະໄດ້ສິດ <strong>admin</strong> ອັດຕະໂນມັດ.
+    </div>
+  </div>
+</div>
+
+<!-- ══ 4. ບໍ່ມີສິດ ════════════════════════════════════════════════════════ -->
+<div id="screen-denied" class="center-screen" hidden>
+  <div class="auth-card">
+    <div class="brand-mark">ຕ</div>
+    <h1>ບັນຊີຖືກປິດການໃຊ້ງານ</h1>
+    <p id="denied-msg">ບັນຊີຂອງທ່ານຍັງບໍ່ໄດ້ຮັບອະນຸຍາດໃຫ້ໃຊ້ລະບົບ — ຕິດຕໍ່ຜູ້ດູແລລະບົບ</p>
+    <button id="btn-logout-denied" class="btn ghost btn-block">ອອກຈາກລະບົບ</button>
+  </div>
+</div>
+
+<!-- ══ 5. ແອັບຫຼັກ ════════════════════════════════════════════════════════ -->
+<div id="screen-app" hidden>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark">ຕ</div>
+        <div>
+          <h1>ລະບົບບັນທຶກສິນຄ້າຫັດຖະກຳ</h1>
+          <p id="conn-label">ເຊື່ອມຕໍ່ Supabase</p>
+        </div>
+      </div>
+      <div class="who">
+        <img id="me-avatar" alt="" hidden>
+        <div style="text-align:right;line-height:1.4">
+          <div id="me-name" style="color:var(--text)"></div>
+          <span id="me-role" class="badge"></span>
+        </div>
+        <button id="btn-refresh" class="btn ghost sm" title="ໂຫຼດຂໍ້ມູນໃໝ່">↻</button>
+        <button id="btn-logout" class="btn ghost sm">ອອກ</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="tabs" id="tabs"></nav>
+    <div id="app-alert" class="alert err"></div>
+
+    <!-- ── ພາບລວມ ─────────────────────────────────────────────────── -->
+    <section class="panel" data-panel="dashboard">
+      <div class="grid stats" style="margin-bottom:20px">
+        <div class="stat"><div class="label">ຍອດຂາຍລວມ</div><div class="value" id="kpi-revenue">0</div><div class="sub">ກີບ</div></div>
+        <div class="stat"><div class="label">ກຳໄລລວມ</div><div class="value" id="kpi-profit">0</div><div class="sub">ກີບ (ໃຊ້ຕົ້ນທຶນສະເລ່ຍ)</div></div>
+        <div class="stat"><div class="label">ສະຕັອກຄົງເຫຼືອ</div><div class="value" id="kpi-stock">0</div><div class="sub">ໜ່ວຍ</div></div>
+        <div class="stat"><div class="label">ສິນຄ້າຂາຍດີ</div><div class="value sm" id="kpi-top">-</div><div class="sub" id="kpi-top-qty"></div></div>
+      </div>
+
+      <div class="grid cols2">
+        <div class="card">
+          <h2>ຍອດຂາຍຕາມແຫຼ່ງສິນຄ້າ</h2>
+          <div id="chart-source"></div>
+        </div>
+        <div class="card">
+          <h2>ຍອດຂາຍຕາມເດືອນ</h2>
+          <div id="chart-month"></div>
+        </div>
+      </div>
+
+      <div class="grid cols2">
+        <div class="card">
+          <h2>ສະຫຼຸບຕາມປະເພດ</h2>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ປະເພດ</th><th class="num">ຂາຍແລ້ວ</th><th class="num">ຄົງເຫຼືອ</th></tr></thead>
+              <tbody id="tbl-category"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>ສິນຄ້າໃກ້ໝົດ <span class="hint">ຕ່ຳກວ່າຈຳນວນຕ່ຳສຸດ</span></h2>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th>ສິນຄ້າ</th><th>ແຫຼ່ງ</th><th class="num">ຄົງເຫຼືອ</th></tr></thead>
+              <tbody id="tbl-low"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ນຳເຂົ້າ ─────────────────────────────────────────────────── -->
+    <section class="panel" data-panel="in">
+      <div class="card">
+        <h2>ບັນທຶກການນຳເຂົ້າ</h2>
+        <form id="form-in">
+          <div class="form-grid">
+            <div class="field"><label>ວັນທີ</label><input name="date" type="date" required></div>
+            <div class="field"><label>ສິນຄ້າ</label><select name="product_id" required></select></div>
+            <div class="field"><label>ແຫຼ່ງສິນຄ້າ</label><select name="source_id"></select></div>
+            <div class="field"><label>ຈຳນວນ</label><input name="qty" type="number" min="0.01" step="any" required></div>
+            <div class="field"><label>ໜ່ວຍ</label><input name="unit" value="ອັນ"></div>
+            <div class="field"><label>ຕົ້ນທຶນ/ໜ່ວຍ (ກີບ)</label><input name="cost" type="number" min="0" step="any"></div>
+            <div class="field"><label>ໝາຍເຫດ</label><input name="note"></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn">ບັນທຶກການນຳເຂົ້າ</button>
+            <button type="reset" class="btn ghost">ລ້າງຟອມ</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>ປະຫວັດການນຳເຂົ້າ <span class="hint" id="count-in"></span></h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ແຫຼ່ງ</th>
+              <th class="num">ຈຳນວນ</th><th class="num">ຕົ້ນທຶນ/ໜ່ວຍ</th><th class="num">ລວມ</th>
+              <th>ໝາຍເຫດ</th><th></th>
+            </tr></thead>
+            <tbody id="tbl-in"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ຂາຍ ─────────────────────────────────────────────────────── -->
+    <section class="panel" data-panel="sale">
+      <div class="card">
+        <h2>ບັນທຶກການຂາຍ</h2>
+        <form id="form-sale">
+          <div class="form-grid">
+            <div class="field"><label>ວັນທີ</label><input name="date" type="date" required></div>
+            <div class="field"><label>ສິນຄ້າ</label><select name="product_id" required></select></div>
+            <div class="field"><label>ລູກຄ້າ</label><input name="customer"></div>
+            <div class="field"><label>ຈຳນວນ</label><input name="qty" type="number" min="0.01" step="any" required></div>
+            <div class="field"><label>ລາຄາຂາຍ/ໜ່ວຍ (ກີບ)</label><input name="price" type="number" min="0" step="any" required></div>
+            <div class="field"><label>ໝາຍເຫດ</label><input name="note"></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn">ບັນທຶກການຂາຍ</button>
+            <button type="reset" class="btn ghost">ລ້າງຟອມ</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>ປະຫວັດການຂາຍ <span class="hint" id="count-sale"></span></h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>ວັນທີ</th><th>ສິນຄ້າ</th><th>ແຫຼ່ງ</th><th>ລູກຄ້າ</th>
+              <th class="num">ຈຳນວນ</th><th class="num">ລາຄາ/ໜ່ວຍ</th><th class="num">ລວມ</th><th class="num">ກຳໄລ</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="tbl-sale"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ສິນຄ້າ (admin) ──────────────────────────────────────────── -->
+    <section class="panel" data-panel="products">
+      <div class="card">
+        <h2 id="title-product">ເພີ່ມສິນຄ້າໃໝ່</h2>
+        <form id="form-product">
+          <input type="hidden" name="id">
+          <div class="form-grid">
+            <div class="field"><label>ຊື່ສິນຄ້າ</label><input name="name" required></div>
+            <div class="field"><label>ປະເພດ</label><input name="category" value="ຕິບເຂົ້າ" required></div>
+            <div class="field"><label>ແຫຼ່ງສິນຄ້າ</label><select name="source_id"></select></div>
+            <div class="field"><label>ໜ່ວຍ</label><input name="unit" value="ອັນ"></div>
+            <div class="field"><label>ຈຳນວນຕ່ຳສຸດ (ເຕືອນ)</label><input name="min_stock" type="number" min="0" step="any" value="8"></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn" id="btn-product-save">ເພີ່ມສິນຄ້າ</button>
+            <button type="button" class="btn ghost" id="btn-product-cancel" hidden>ຍົກເລີກ</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>ລາຍການສິນຄ້າ <span class="hint" id="count-product"></span></h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>ຊື່ສິນຄ້າ</th><th>ປະເພດ</th><th>ແຫຼ່ງ</th><th>ໜ່ວຍ</th>
+              <th class="num">ຄົງເຫຼືອ</th><th class="num">ຕົ້ນທຶນສະເລ່ຍ</th><th></th>
+            </tr></thead>
+            <tbody id="tbl-product"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ແຫຼ່ງສິນຄ້າ (admin) ─────────────────────────────────────── -->
+    <section class="panel" data-panel="sources">
+      <div class="card">
+        <h2 id="title-source">ເພີ່ມແຫຼ່ງສິນຄ້າໃໝ່</h2>
+        <form id="form-source">
+          <input type="hidden" name="id">
+          <div class="form-grid">
+            <div class="field"><label>ລະຫັດ</label><input name="code" placeholder="C1"></div>
+            <div class="field"><label>ຊື່ແຫຼ່ງ</label><input name="name" required></div>
+            <div class="field"><label>ຂໍ້ມູນຕິດຕໍ່ / ບ້ານ</label><input name="contact"></div>
+            <div class="field"><label>ໝາຍເຫດ</label><input name="note"></div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn" id="btn-source-save">ເພີ່ມແຫຼ່ງສິນຄ້າ</button>
+            <button type="button" class="btn ghost" id="btn-source-cancel" hidden>ຍົກເລີກ</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>ລາຍການແຫຼ່ງສິນຄ້າ <span class="hint" id="count-source"></span></h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>ລະຫັດ</th><th>ຊື່</th><th>ຕິດຕໍ່</th><th>ໝາຍເຫດ</th>
+              <th class="num">ສິນຄ້າ</th><th class="num">ຄົງເຫຼືອ</th><th></th>
+            </tr></thead>
+            <tbody id="tbl-source"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ຜູ້ໃຊ້ (admin) ──────────────────────────────────────────── -->
+    <section class="panel" data-panel="users">
+      <div class="card">
+        <h2>ຜູ້ໃຊ້ລະບົບ <span class="hint">ຄົນທີ່ເຄີຍເຂົ້າສູ່ລະບົບແລ້ວ</span></h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>ອີເມວ</th><th>ຊື່</th><th>ສິດ</th><th>ສະຖານະ</th><th>ເຂົ້າຮ່ວມ</th><th></th></tr></thead>
+            <tbody id="tbl-users"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <h2>ລາຍຊື່ອີເມວທີ່ໄດ້ສິດ admin ອັດຕະໂນມັດ</h2>
+        <form id="form-allow">
+          <div class="form-grid">
+            <div class="field"><label>ອີເມວ</label><input name="email" type="email" required></div>
+            <div class="field"><label>ໝາຍເຫດ</label><input name="note"></div>
+          </div>
+          <div class="actions"><button type="submit" class="btn">ເພີ່ມ</button></div>
+        </form>
+        <div class="table-scroll" style="margin-top:16px">
+          <table>
+            <thead><tr><th>ອີເມວ</th><th>ໝາຍເຫດ</th><th></th></tr></thead>
+            <tbody id="tbl-allow"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

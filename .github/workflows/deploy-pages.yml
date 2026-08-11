@@ -1,0 +1,59 @@
+name: Deploy web app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'assets/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build site folder
+        env:
+          # ບໍ່ບັງຄັບ — ຖ້າຕັ້ງ 2 secrets ນີ້ໄວ້ ແອັບຈະຕັ້ງຄ່າໃຫ້ເອງ
+          # (anon key ເປັນ public key ໂດຍທຳມະຊາດ, ປອດໄພທີ່ຈະສົ່ງໄປ browser)
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          mkdir -p _site
+          cp index.html _site/
+          cp -r assets _site/
+          touch _site/.nojekyll
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_ANON_KEY" ]; then
+            cat > _site/assets/config.js <<EOF
+          // ສ້າງອັດຕະໂນມັດຕອນ deploy — ຢ່າແກ້ດ້ວຍມື
+          window.HANDICRAFT_CONFIG = {
+            SUPABASE_URL: "$SUPABASE_URL",
+            SUPABASE_ANON_KEY: "$SUPABASE_ANON_KEY"
+          };
+          EOF
+            echo "✅ ໃສ່ຄ່າ Supabase ຈາກ secrets ແລ້ວ"
+          else
+            echo "⚠️ ບໍ່ພົບ secrets — ແອັບຈະສະແດງໜ້າຕັ້ງຄ່າໃຫ້ໃສ່ເອງ"
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
