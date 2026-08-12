@@ -15,7 +15,5 @@
 window.HANDICRAFT_CONFIG = {
   SUPABASE_URL: "https://vlazkjklsqhcwsmggrqq.supabase.co",
 
-  // ⬇️ ຍັງຂາດອັນນີ້ — ກ໊ອບປີ້ "anon public" key ຈາກ
-  //    Project Settings → API Keys ມາວາງໃສ່ໃນເຄື່ອງໝາຍຄຳພູດ
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_ANON_KEY: "sb_publishable_vr3H2kaBGnh0Rf2PEc9opg_1xoY0LDs"
 };
