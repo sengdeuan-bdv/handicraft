@@ -16,6 +16,13 @@ const today    = () => new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD ຕ
 const esc      = s => String(s ?? '').replace(/[&<>"']/g, c =>
                    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const nullable = v => { const s = String(v ?? '').trim(); return s === '' ? null : s; };
+
+/** ລະຫັດຜ່ານສຸ່ມທີ່ອ່ານອອກສຽງໄດ້ — ຕັດ 0/O/1/l/I ອອກ ກັນສັບສົນຕອນບອກຕໍ່ */
+function randomPassword(len = 10) {
+  const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  return Array.from(crypto.getRandomValues(new Uint32Array(len)),
+    n => abc[n % abc.length]).join('');
+}
 const numOr    = (v, d = 0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
 
 function show(id) {
@@ -148,9 +155,7 @@ function loginScreen() {
   function authError(err) {
     const m = err?.message || '';
     if (/Invalid login credentials/i.test(m))
-      return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ. ຖ້າຍັງບໍ່ເຄີຍຕັ້ງລະຫັດຜ່ານ '
-           + '(ເຄີຍເຂົ້າດ້ວຍລິ້ງທາງອີເມວເທົ່ານັ້ນ) ໃຫ້ກົດ “ລືມລະຫັດ? ສົ່ງລິ້ງທາງອີເມວ” '
-           + 'ຂ້າງລຸ່ມ ແລ້ວຕັ້ງລະຫັດຜ່ານດ້ວຍປຸ່ມ 🔑 ຫຼັງເຂົ້າລະບົບ';
+      return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ — ກວດການພິມ ຫຼື ຂໍລະຫັດຜ່ານໃໝ່ຈາກຜູ້ດູແລລະບົບ';
     if (/Email not confirmed/i.test(m))
       return 'ຍັງບໍ່ໄດ້ຢືນຢັນອີເມວ — ກວດກ່ອງອີເມວຂອງທ່ານ ຫຼື ແຈ້ງຜູ້ດູແລໃຫ້ປິດການຢືນຢັນອີເມວ';
     if (/User already registered|already been registered/i.test(m))
@@ -181,28 +186,7 @@ function loginScreen() {
     });
   };
 
-  // ── ສະໝັກບັນຊີໃໝ່ ───────────────────────────────────────────────────
-  $('#btn-signup').onclick = async () => {
-    alertBox('login-alert', ''); alertBox('login-ok', '', 'ok');
-    const { email, password } = creds();
-    if (!email)               return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວ');
-    if (!password || password.length < 6)
-      return alertBox('login-alert', 'ຕັ້ງລະຫັດຜ່ານຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ');
-
-    await withButton($('#btn-signup'), 'ກຳລັງສະໝັກ…', async () => {
-      const { data, error } = await sb.auth.signUp({
-        email, password, options: { emailRedirectTo: redirectTo }
-      });
-      if (error) return alertBox('login-alert', authError(error));
-      // ຖ້າເປີດການຢືນຢັນອີເມວໄວ້ ຈະຍັງບໍ່ມີ session
-      if (!data.session) {
-        alertBox('login-ok', 'ສະໝັກແລ້ວ — ກວດອີເມວເພື່ອຢືນຢັນບັນຊີ ແລ້ວຈຶ່ງເຂົ້າສູ່ລະບົບ', 'ok');
-      }
-      // ມີ session → onAuthStateChange ຈະພາໄປໜ້າ “ລໍຖ້າອະນຸມັດ” ເອງ
-    });
-  };
-
-  // ── ລິ້ງທາງອີເມວ (ສຳຮອງ / ລືມລະຫັດ) ─────────────────────────────────
+  // ── ລິ້ງທາງອີເມວ (ສຳຮອງ) ────────────────────────────────────────────
   $('#btn-magic').onclick = async () => {
     const email = $('#login-email').value.trim();
     if (!email) return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວກ່ອນ');
@@ -580,13 +564,15 @@ function renderUsers() {
           <td>${esc(u.full_name || '-')}</td>
           <td><span class="badge ${u.role === 'admin' ? 'admin' : ''}">${esc(u.role)}</span></td>
           <td>${status}</td>
-          <td>${esc(String(u.created_at).slice(0, 10))}</td>
+          <td>${esc(String(u.created_at || '').slice(0, 10) || '-')}</td>
           <td class="num" style="white-space:nowrap">
             <button class="link-btn edit" data-role-user="${esc(u.id)}" ${self ? 'disabled' : ''}>
               ${u.role === 'admin' ? 'ປ່ຽນເປັນ staff' : 'ປ່ຽນເປັນ admin'}</button>
             &nbsp;
             <button class="link-btn ${u.active ? 'del' : 'edit'}" data-active-user="${esc(u.id)}" ${self ? 'disabled' : ''}>
               ${u.active ? 'ປິດການໃຊ້ງານ' : (waiting ? 'ອະນຸມັດ' : 'ເປີດໃຊ້ງານ')}</button>
+            &nbsp;
+            <button class="link-btn edit" data-pw-user="${esc(u.id)}">ຕັ້ງລະຫັດຜ່ານໃໝ່</button>
           </td></tr>`;
       }).join('')
     : '<tr><td colspan="6" class="empty">ຍັງບໍ່ມີຜູ້ໃຊ້</td></tr>';
@@ -600,6 +586,19 @@ function renderUsers() {
     if (u.active && !confirm(`ປິດການໃຊ້ງານ ${u.email}? ຈະເຂົ້າລະບົບບໍ່ໄດ້ອີກ`)) return;
     await updateRow('app_users', u.id, { active: !u.active },
       u.active ? 'ປິດການໃຊ້ງານແລ້ວ' : 'ອະນຸມັດແລ້ວ — ຜູ້ໃຊ້ເຂົ້າລະບົບໄດ້ເລີຍ');
+  });
+
+  $$('[data-pw-user]').forEach(b => b.onclick = async () => {
+    const u  = db.users.find(x => x.id === b.dataset.pwUser);
+    const pw = randomPassword();
+    if (!confirm(`ຕັ້ງລະຫັດຜ່ານໃໝ່ໃຫ້ ${u.email}?\n\nລະຫັດໃໝ່: ${pw}\n\nຈົດໄວ້ກ່ອນກົດ OK — ຈະບໍ່ສະແດງອີກ`)) return;
+    const { error } = await sb.rpc('admin_set_password', { p_user_id: u.id, p_password: pw });
+    if (error) return toast(friendlyError(error), true);
+    $('#newuser-result').className = 'alert ok';
+    $('#newuser-result').innerHTML =
+      `ຕັ້ງລະຫັດຜ່ານໃໝ່ໃຫ້ <strong>${esc(u.email)}</strong> ແລ້ວ<br>
+       ລະຫັດຜ່ານໃໝ່: <strong>${esc(pw)}</strong>`;
+    toast('ຕັ້ງລະຫັດຜ່ານໃໝ່ແລ້ວ');
   });
 
   $('#tbl-allow').innerHTML = db.allowlist.length
@@ -733,6 +732,33 @@ function wireForms() {
     await refresh(true);
   });
   $('#btn-source-cancel').onclick = resetSourceForm;
+
+  // ສ້າງບັນຊີໃຫ້ພະນັກງານ
+  $('#btn-genpw').onclick = () => {
+    $('#form-newuser').password.value = randomPassword();
+  };
+
+  onSubmit('#form-newuser', async (v, form) => {
+    const { data, error } = await sb.rpc('admin_create_user', {
+      p_email:     v.email.trim(),
+      p_password:  v.password,
+      p_role:      v.role,
+      p_full_name: nullable(v.full_name)
+    });
+    if (error) throw error;
+    const u = Array.isArray(data) ? data[0] : data;
+
+    // ສະແດງຄ່າໄວ້ໃຫ້ admin ຈົດ/ບອກຕໍ່ — ບໍ່ມີບ່ອນເບິ່ງຄືນພາຍຫຼັງ
+    $('#newuser-result').className = 'alert ok';
+    $('#newuser-result').innerHTML =
+      `ສ້າງບັນຊີສຳເລັດ — ບອກຂໍ້ມູນນີ້ໃຫ້ພະນັກງານ (<strong>ລະຫັດຜ່ານຈະບໍ່ສະແດງອີກ</strong>)<br>
+       ອີເມວ: <strong>${esc(u.email)}</strong><br>
+       ລະຫັດຜ່ານ: <strong>${esc(v.password)}</strong><br>
+       ສິດ: <strong>${esc(u.role)}</strong>`;
+    toast('ສ້າງບັນຊີແລ້ວ');
+    form.reset();
+    await refresh(true);
+  });
 
   // ລາຍຊື່ admin
   onSubmit('#form-allow', async (v, form) => {

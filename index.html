@@ -84,14 +84,16 @@
       <button type="submit" class="btn btn-block">ເຂົ້າສູ່ລະບົບ</button>
     </form>
 
-    <div class="actions" style="margin-top:10px">
-      <button id="btn-signup" class="btn ghost sm" style="flex:1">ສະໝັກບັນຊີໃໝ່</button>
-      <button id="btn-magic"  class="btn ghost sm" style="flex:1">ລືມລະຫັດ? ສົ່ງລິ້ງທາງອີເມວ</button>
-    </div>
+    <details style="margin-top:14px">
+      <summary style="font-size:12px;color:var(--muted);cursor:pointer">ວິທີເຂົ້າແບບອື່ນ</summary>
+      <button id="btn-magic" class="btn ghost sm btn-block" style="margin-top:10px">
+        ສົ່ງລິ້ງເຂົ້າລະບົບໄປອີເມວ
+      </button>
+    </details>
 
     <div class="note">
-      ພະນັກງານໃໝ່: ກົດ <strong>ສະໝັກບັນຊີໃໝ່</strong> ເທື່ອດຽວ
-      ແລ້ວລໍໃຫ້ຜູ້ດູແລອະນຸມັດ ຈຶ່ງເຂົ້າໃຊ້ໄດ້.
+      ບໍ່ມີບັນຊີ? <strong>ຜູ້ດູແລລະບົບເປັນຜູ້ສ້າງໃຫ້</strong> —
+      ຕິດຕໍ່ຂໍອີເມວ ແລະ ລະຫັດຜ່ານຈາກຜູ້ດູແລ.
     </div>
   </div>
 </div>
@@ -329,6 +331,28 @@
             <tbody id="tbl-users"></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>ສ້າງບັນຊີໃຫ້ພະນັກງານ <span class="hint">ບອກອີເມວ ແລະ ລະຫັດຜ່ານໃຫ້ເຂົາປາກຕໍ່ປາກ</span></h2>
+        <form id="form-newuser">
+          <div class="form-grid">
+            <div class="field"><label>ອີເມວ</label><input name="email" type="email" required placeholder="staff@gmail.com"></div>
+            <div class="field"><label>ຊື່ ແລະ ນາມສະກຸນ</label><input name="full_name" placeholder="ບໍ່ບັງຄັບ"></div>
+            <div class="field"><label>ລະຫັດຜ່ານ</label><input name="password" type="text" minlength="6" required placeholder="ຢ່າງໜ້ອຍ 6 ຕົວ"></div>
+            <div class="field"><label>ສິດ</label>
+              <select name="role">
+                <option value="staff">staff — ບັນທຶກນຳເຂົ້າ/ຂາຍ</option>
+                <option value="admin">admin — ສິດເຕັມ</option>
+              </select>
+            </div>
+          </div>
+          <div class="actions">
+            <button type="submit" class="btn">ສ້າງບັນຊີ</button>
+            <button type="button" class="btn ghost" id="btn-genpw">ສຸ່ມລະຫັດຜ່ານ</button>
+          </div>
+        </form>
+        <div id="newuser-result" class="alert ok" style="margin-top:14px"></div>
       </div>
       <div class="card">
         <h2>ລາຍຊື່ອີເມວທີ່ໄດ້ສິດ admin ອັດຕະໂນມັດ</h2>
