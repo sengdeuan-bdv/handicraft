@@ -19,5 +19,5 @@ window.HANDICRAFT_CONFIG = {
 
   // ໂໝດຜູ້ໃຊ້ຄົນດຽວ: ໜ້າ login ຈະຖາມແຕ່ລະຫັດຜ່ານ ບໍ່ຕ້ອງພິມອີເມວ
   // ຢາກກັບໄປໃຫ້ພິມອີເມວນຳ (ຕອນມີພະນັກງານຫຼາຍຄົນ) → ຕັ້ງເປັນ "" ຫວ່າງ
-  LOGIN_EMAIL: "sengdeuan.boutdavong@gmail.com"
+  LOGIN_EMAIL: "admin@handicraft.la"
 };
