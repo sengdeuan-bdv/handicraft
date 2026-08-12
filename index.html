@@ -7,7 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/styles.css">
+<!-- ?v= ບັງຄັບໃຫ້ browser ໂຫຼດໄຟລ໌ໃໝ່ຫຼັງອັບເດດ — ເພີ່ມເລກນີ້ທຸກຄັ້ງທີ່ແກ້ assets/ -->
+<link rel="stylesheet" href="assets/styles.css?v=2">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%236b4a30'/><text x='50' y='72' font-size='62' fill='%23fffdf8' text-anchor='middle' font-family='serif'>ຕ</text></svg>">
 </head>
 <body>
@@ -69,15 +70,28 @@
 
     <div class="divider">ຫຼື</div>
 
-    <div class="field">
-      <label for="login-email">ອີເມວ (ຮັບລິ້ງເຂົ້າລະບົບ)</label>
-      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email">
+    <form id="form-password">
+      <div class="field">
+        <label for="login-email">ອີເມວ</label>
+        <input id="login-email" name="email" type="email" placeholder="you@gmail.com"
+               autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="login-password">ລະຫັດຜ່ານ</label>
+        <input id="login-password" name="password" type="password" placeholder="ຢ່າງໜ້ອຍ 6 ຕົວ"
+               autocomplete="current-password" minlength="6" required>
+      </div>
+      <button type="submit" class="btn btn-block">ເຂົ້າສູ່ລະບົບ</button>
+    </form>
+
+    <div class="actions" style="margin-top:10px">
+      <button id="btn-signup" class="btn ghost sm" style="flex:1">ສະໝັກບັນຊີໃໝ່</button>
+      <button id="btn-magic"  class="btn ghost sm" style="flex:1">ລືມລະຫັດ? ສົ່ງລິ້ງທາງອີເມວ</button>
     </div>
-    <button id="btn-magic" class="btn ghost btn-block">ສົ່ງລິ້ງເຂົ້າລະບົບໄປອີເມວ</button>
 
     <div class="note">
-      ຜູ້ໃຊ້ໃໝ່ຈະໄດ້ສິດ <strong>staff</strong> ໂດຍປະລິຍາຍ.<br>
-      ອີເມວທີ່ຢູ່ໃນລາຍຊື່ admin ຈະໄດ້ສິດ <strong>admin</strong> ອັດຕະໂນມັດ.
+      ພະນັກງານໃໝ່: ກົດ <strong>ສະໝັກບັນຊີໃໝ່</strong> ເທື່ອດຽວ
+      ແລ້ວລໍໃຫ້ຜູ້ດູແລອະນຸມັດ ຈຶ່ງເຂົ້າໃຊ້ໄດ້.
     </div>
   </div>
 </div>
@@ -86,9 +100,16 @@
 <div id="screen-denied" class="center-screen" hidden>
   <div class="auth-card">
     <div class="brand-mark">ຕ</div>
-    <h1>ບັນຊີຖືກປິດການໃຊ້ງານ</h1>
-    <p id="denied-msg">ບັນຊີຂອງທ່ານຍັງບໍ່ໄດ້ຮັບອະນຸຍາດໃຫ້ໃຊ້ລະບົບ — ຕິດຕໍ່ຜູ້ດູແລລະບົບ</p>
-    <button id="btn-logout-denied" class="btn ghost btn-block">ອອກຈາກລະບົບ</button>
+    <h1 id="denied-title">ລໍຖ້າການອະນຸມັດ</h1>
+    <p id="denied-msg">
+      ສະໝັກສຳເລັດແລ້ວ. ຜູ້ດູແລລະບົບຕ້ອງອະນຸມັດບັນຊີຂອງທ່ານກ່ອນ ຈຶ່ງຈະໃຊ້ງານໄດ້ —
+      ກະລຸນາແຈ້ງໃຫ້ຜູ້ດູແລຮູ້ ແລ້ວເຂົ້າມາໃໝ່ພາຍຫຼັງ.
+    </p>
+    <div class="note" id="denied-email" style="text-align:center"></div>
+    <div class="actions" style="margin-top:16px">
+      <button id="btn-recheck" class="btn" style="flex:1">ກວດອີກເທື່ອ</button>
+      <button id="btn-logout-denied" class="btn ghost" style="flex:1">ອອກຈາກລະບົບ</button>
+    </div>
   </div>
 </div>
 
@@ -300,6 +321,7 @@
     <section class="panel" data-panel="users">
       <div class="card">
         <h2>ຜູ້ໃຊ້ລະບົບ <span class="hint">ຄົນທີ່ເຄີຍເຂົ້າສູ່ລະບົບແລ້ວ</span></h2>
+        <div id="users-pending" class="alert"></div>
         <div class="table-scroll">
           <table>
             <thead><tr><th>ອີເມວ</th><th>ຊື່</th><th>ສິດ</th><th>ສະຖານະ</th><th>ເຂົ້າຮ່ວມ</th><th></th></tr></thead>
@@ -330,7 +352,7 @@
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="assets/config.js"></script>
-<script src="assets/app.js"></script>
+<script src="assets/config.js?v=2"></script>
+<script src="assets/app.js?v=2"></script>
 </body>
 </html>

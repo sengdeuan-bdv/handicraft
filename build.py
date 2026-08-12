@@ -31,16 +31,20 @@ def main():
                      'SUPABASE_ANON_KEY: ' + json.dumps(key), cfg)
         print('ໃສ່ anon key ຕອນ build ແລ້ວ')
 
-    # ວາງ CSS ແທນ <link>
-    html = html.replace(
-        '<link rel="stylesheet" href="assets/styles.css">',
-        '<style>\n' + css + '\n</style>')
+    # ວາງ CSS ແທນ <link>  (ຮັບ ?v=N ນຳ)
+    html = re.sub(
+        r'<link rel="stylesheet" href="assets/styles\.css(?:\?[^"]*)?">',
+        lambda _: '<style>\n' + css + '\n</style>',
+        html, count=1)
 
     # ວາງ JS ແທນ <script src>
-    for src, code in (('assets/config.js', cfg), ('assets/app.js', app)):
-        html = html.replace(
-            f'<script src="{src}"></script>',
-            '<script>\n' + code + '\n</script>')
+    for name, code in (('config', cfg), ('app', app)):
+        html, n = re.subn(
+            r'<script src="assets/%s\.js(?:\?[^"]*)?"></script>' % name,
+            lambda _, c=code: '<script>\n' + c + '\n</script>',
+            html, count=1)
+        if not n:
+            raise SystemExit(f'ຫາ <script> ຂອງ assets/{name}.js ໃນ index.html ບໍ່ພົບ')
 
     left = re.findall(r'<(?:script src|link rel="stylesheet" href)="assets/[^"]+"', html)
     if left:

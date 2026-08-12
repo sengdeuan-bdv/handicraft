@@ -135,15 +135,77 @@ function loginScreen() {
       + ' — ກວດວ່າເປີດ GitHub provider ໃນ Supabase → Authentication → Providers ແລ້ວບໍ');
   };
 
+  const creds = () => ({
+    email: $('#login-email').value.trim(),
+    password: $('#login-password').value
+  });
+
+  /** ແປ error ຂອງລະບົບ auth ໃຫ້ເປັນພາສາລາວ */
+  function authError(err) {
+    const m = err?.message || '';
+    if (/Invalid login credentials/i.test(m))
+      return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
+    if (/Email not confirmed/i.test(m))
+      return 'ຍັງບໍ່ໄດ້ຢືນຢັນອີເມວ — ກວດກ່ອງອີເມວຂອງທ່ານ ຫຼື ແຈ້ງຜູ້ດູແລໃຫ້ປິດການຢືນຢັນອີເມວ';
+    if (/User already registered|already been registered/i.test(m))
+      return 'ອີເມວນີ້ສະໝັກແລ້ວ — ໃຫ້ກົດ “ເຂົ້າສູ່ລະບົບ” ແທນ';
+    if (/Password should be at least/i.test(m))
+      return 'ລະຫັດຜ່ານສັ້ນເກີນໄປ — ຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ';
+    if (/rate limit|too many requests/i.test(m))
+      return 'ລອງຫຼາຍເທື່ອເກີນໄປ — ລໍສັກຄູ່ແລ້ວລອງໃໝ່';
+    if (/Signups not allowed|signup is disabled/i.test(m))
+      return 'ລະບົບປິດການສະໝັກໃໝ່ຢູ່ — ແຈ້ງຜູ້ດູແລລະບົບ';
+    return m || 'ເຂົ້າສູ່ລະບົບບໍ່ສຳເລັດ';
+  }
+
+  async function withButton(btn, label, fn) {
+    const old = btn.textContent;
+    btn.disabled = true; btn.textContent = label;
+    try { await fn(); } finally { btn.disabled = false; btn.textContent = old; }
+  }
+
+  // ── ເຂົ້າສູ່ລະບົບດ້ວຍລະຫັດຜ່ານ ──────────────────────────────────────
+  $('#form-password').onsubmit = async (e) => {
+    e.preventDefault();
+    alertBox('login-alert', ''); alertBox('login-ok', '', 'ok');
+    const btn = e.target.querySelector('button[type=submit]');
+    await withButton(btn, 'ກຳລັງເຂົ້າ…', async () => {
+      const { error } = await sb.auth.signInWithPassword(creds());
+      if (error) alertBox('login-alert', authError(error));
+    });
+  };
+
+  // ── ສະໝັກບັນຊີໃໝ່ ───────────────────────────────────────────────────
+  $('#btn-signup').onclick = async () => {
+    alertBox('login-alert', ''); alertBox('login-ok', '', 'ok');
+    const { email, password } = creds();
+    if (!email)               return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວ');
+    if (!password || password.length < 6)
+      return alertBox('login-alert', 'ຕັ້ງລະຫັດຜ່ານຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ');
+
+    await withButton($('#btn-signup'), 'ກຳລັງສະໝັກ…', async () => {
+      const { data, error } = await sb.auth.signUp({
+        email, password, options: { emailRedirectTo: redirectTo }
+      });
+      if (error) return alertBox('login-alert', authError(error));
+      // ຖ້າເປີດການຢືນຢັນອີເມວໄວ້ ຈະຍັງບໍ່ມີ session
+      if (!data.session) {
+        alertBox('login-ok', 'ສະໝັກແລ້ວ — ກວດອີເມວເພື່ອຢືນຢັນບັນຊີ ແລ້ວຈຶ່ງເຂົ້າສູ່ລະບົບ', 'ok');
+      }
+      // ມີ session → onAuthStateChange ຈະພາໄປໜ້າ “ລໍຖ້າອະນຸມັດ” ເອງ
+    });
+  };
+
+  // ── ລິ້ງທາງອີເມວ (ສຳຮອງ / ລືມລະຫັດ) ─────────────────────────────────
   $('#btn-magic').onclick = async () => {
     const email = $('#login-email').value.trim();
-    if (!email) return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວ');
-    const btn = $('#btn-magic');
-    btn.disabled = true; btn.textContent = 'ກຳລັງສົ່ງ…';
-    const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
-    btn.disabled = false; btn.textContent = 'ສົ່ງລິ້ງເຂົ້າລະບົບໄປອີເມວ';
-    if (error) alertBox('login-alert', error.message);
-    else { alertBox('login-alert', ''); alertBox('login-ok', 'ສົ່ງລິ້ງໄປທີ່ ' + email + ' ແລ້ວ — ກວດອີເມວຂອງທ່ານ', 'ok'); }
+    if (!email) return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວກ່ອນ');
+    alertBox('login-alert', '');
+    await withButton($('#btn-magic'), 'ກຳລັງສົ່ງ…', async () => {
+      const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+      if (error) alertBox('login-alert', authError(error));
+      else alertBox('login-ok', 'ສົ່ງລິ້ງໄປທີ່ ' + email + ' ແລ້ວ — ກວດອີເມວຂອງທ່ານ', 'ok');
+    });
   };
 }
 
@@ -489,21 +551,36 @@ function resetSourceForm() {
 function renderUsers() {
   if (!isAdmin()) return;
 
-  $('#tbl-users').innerHTML = db.users.length
-    ? db.users.map(u => {
-        const self = u.id === me.id;
-        return `<tr>
+  const pending = db.users.filter(u => !u.active && !u.approved_at).length;
+  $('#users-pending').textContent = pending
+    ? `${pending} ຄົນລໍຖ້າການອະນຸມັດ` : '';
+  $('#users-pending').className = pending ? 'alert info' : 'alert';
+
+  // ຄົນທີ່ລໍອະນຸມັດຂຶ້ນກ່ອນ ຈະໄດ້ບໍ່ຕົກຫຼົ່ນ
+  const rows = [...db.users].sort((a, b) =>
+    (a.active === b.active) ? 0 : (a.active ? 1 : -1));
+
+  $('#tbl-users').innerHTML = rows.length
+    ? rows.map(u => {
+        const self    = u.id === me.id;
+        const waiting = !u.active && !u.approved_at;
+        const status  = u.active
+          ? 'ໃຊ້ງານໄດ້'
+          : waiting
+            ? '<span style="color:var(--brown);font-weight:600">ລໍອະນຸມັດ</span>'
+            : '<span style="color:var(--red)">ປິດແລ້ວ</span>';
+        return `<tr${waiting ? ' class="low"' : ''}>
           <td>${esc(u.email)}</td>
           <td>${esc(u.full_name || '-')}</td>
           <td><span class="badge ${u.role === 'admin' ? 'admin' : ''}">${esc(u.role)}</span></td>
-          <td>${u.active ? 'ໃຊ້ງານໄດ້' : '<span style="color:var(--red)">ປິດແລ້ວ</span>'}</td>
+          <td>${status}</td>
           <td>${esc(String(u.created_at).slice(0, 10))}</td>
           <td class="num" style="white-space:nowrap">
             <button class="link-btn edit" data-role-user="${esc(u.id)}" ${self ? 'disabled' : ''}>
               ${u.role === 'admin' ? 'ປ່ຽນເປັນ staff' : 'ປ່ຽນເປັນ admin'}</button>
             &nbsp;
-            <button class="link-btn del" data-active-user="${esc(u.id)}" ${self ? 'disabled' : ''}>
-              ${u.active ? 'ປິດການໃຊ້ງານ' : 'ເປີດໃຊ້ງານ'}</button>
+            <button class="link-btn ${u.active ? 'del' : 'edit'}" data-active-user="${esc(u.id)}" ${self ? 'disabled' : ''}>
+              ${u.active ? 'ປິດການໃຊ້ງານ' : (waiting ? 'ອະນຸມັດ' : 'ເປີດໃຊ້ງານ')}</button>
           </td></tr>`;
       }).join('')
     : '<tr><td colspan="6" class="empty">ຍັງບໍ່ມີຜູ້ໃຊ້</td></tr>';
@@ -514,7 +591,9 @@ function renderUsers() {
   });
   $$('[data-active-user]').forEach(b => b.onclick = async () => {
     const u = db.users.find(x => x.id === b.dataset.activeUser);
-    await updateRow('app_users', u.id, { active: !u.active }, 'ປ່ຽນສະຖານະແລ້ວ');
+    if (u.active && !confirm(`ປິດການໃຊ້ງານ ${u.email}? ຈະເຂົ້າລະບົບບໍ່ໄດ້ອີກ`)) return;
+    await updateRow('app_users', u.id, { active: !u.active },
+      u.active ? 'ປິດການໃຊ້ງານແລ້ວ' : 'ອະນຸມັດແລ້ວ — ຜູ້ໃຊ້ເຂົ້າລະບົບໄດ້ເລີຍ');
   });
 
   $('#tbl-allow').innerHTML = db.allowlist.length
@@ -686,6 +765,16 @@ async function startApp(session) {
   me = Array.isArray(data) ? data[0] : data;
 
   if (!me || me.active === false) {
+    // ຍັງບໍ່ເຄີຍຖືກອະນຸມັດ = ຄົນໃໝ່ລໍຢູ່ | ເຄີຍອະນຸມັດແລ້ວຖືກປິດ = ຖືກລະງັບ
+    const neverApproved = me && !me.approved_at;
+    $('#denied-title').textContent = neverApproved ? 'ລໍຖ້າການອະນຸມັດ' : 'ບັນຊີຖືກລະງັບ';
+    $('#denied-msg').textContent = neverApproved
+      ? 'ສະໝັກສຳເລັດແລ້ວ. ຜູ້ດູແລລະບົບຕ້ອງອະນຸມັດບັນຊີຂອງທ່ານກ່ອນ ຈຶ່ງຈະໃຊ້ງານໄດ້ — ກະລຸນາແຈ້ງໃຫ້ຜູ້ດູແລຮູ້ ແລ້ວກົດ “ກວດອີກເທື່ອ”'
+      : 'ບັນຊີຂອງທ່ານຖືກປິດການໃຊ້ງານໂດຍຜູ້ດູແລລະບົບ — ຕິດຕໍ່ຜູ້ດູແລເພື່ອເປີດຄືນ';
+    $('#denied-email').textContent = me?.email ? 'ບັນຊີ: ' + me.email : '';
+    // ປຸ່ມໜ້ານີ້ຕ້ອງຜູກຢູ່ບ່ອນນີ້ — wireForms() ບໍ່ໄດ້ແລ່ນເມື່ອຍັງບໍ່ຜ່ານດ່ານ
+    $('#btn-logout-denied').onclick = signOut;
+    $('#btn-recheck').onclick = () => startApp(session);
     show('screen-denied');
     return;
   }
