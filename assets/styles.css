@@ -190,6 +190,19 @@ tr.low td { background: var(--warn-bg); }
 .alert.info { background: var(--warn-bg); color: var(--brown-dk); border: 1px solid var(--border); }
 .alert:empty { display: none; }
 
+/* ── Dialog ───────────────────────────────────────────────────────────── */
+
+dialog {
+  border: 1px solid var(--border); border-radius: 14px; padding: 26px;
+  width: min(94vw, 400px); background: var(--surface); color: var(--text);
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+  margin: auto;   /* ຈຳເປັນ — `* { margin: 0 }` ຂ້າງເທິງລຶບການຈັດກາງຂອງ browser */
+}
+dialog::backdrop { background: rgba(42,33,24,.45); }
+dialog h2 { font-size: 17px; color: var(--brown-dk); margin-bottom: 6px; }
+dialog .dlg-sub { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+dialog .field { margin-bottom: 12px; }
+
 #toast {
   position: fixed; bottom: 22px; left: 50%; transform: translate(-50%, 80px);
   background: var(--brown-dk); color: var(--surface);

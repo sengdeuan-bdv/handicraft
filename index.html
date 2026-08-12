@@ -132,6 +132,7 @@
           <span id="me-role" class="badge"></span>
         </div>
         <button id="btn-refresh" class="btn ghost sm" title="ໂຫຼດຂໍ້ມູນໃໝ່">↻</button>
+        <button id="btn-passwd" class="btn ghost sm" title="ຕັ້ງ ຫຼື ປ່ຽນລະຫັດຜ່ານ">🔑</button>
         <button id="btn-logout" class="btn ghost sm">ອອກ</button>
       </div>
     </div>
@@ -348,6 +349,28 @@
     </section>
   </div>
 </div>
+
+<!-- ══ ຕັ້ງ / ປ່ຽນລະຫັດຜ່ານ ══════════════════════════════════════════════ -->
+<dialog id="dlg-passwd">
+  <form id="form-passwd" method="dialog">
+    <h2>ຕັ້ງ ຫຼື ປ່ຽນລະຫັດຜ່ານ</h2>
+    <p class="dlg-sub">ຕັ້ງແລ້ວຈະເຂົ້າສູ່ລະບົບດ້ວຍອີເມວ + ລະຫັດຜ່ານໄດ້ ບໍ່ຕ້ອງລໍລິ້ງທາງອີເມວອີກ</p>
+    <div id="passwd-alert" class="alert err"></div>
+    <div class="field">
+      <label for="pw-new">ລະຫັດຜ່ານໃໝ່</label>
+      <input id="pw-new" type="password" minlength="6" placeholder="ຢ່າງໜ້ອຍ 6 ຕົວ"
+             autocomplete="new-password" required>
+    </div>
+    <div class="field">
+      <label for="pw-confirm">ພິມຊ້ຳອີກເທື່ອ</label>
+      <input id="pw-confirm" type="password" minlength="6" autocomplete="new-password" required>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn" id="btn-passwd-save">ບັນທຶກ</button>
+      <button type="button" class="btn ghost" id="btn-passwd-cancel">ຍົກເລີກ</button>
+    </div>
+  </form>
+</dialog>
 
 <div id="toast"></div>
 

@@ -58,6 +58,10 @@ function friendlyError(err) {
 
 /* ── ສະຖານະແອັບ ──────────────────────────────────────────────────────── */
 
+// ຈັບ hash ໄວ້ກ່ອນ supabase-js ລຶບຖິ້ມ — ໃຊ້ຮູ້ວ່າມາຈາກລິ້ງທາງອີເມວບໍ
+const ARRIVED_BY_LINK = /access_token|type=(magiclink|recovery|signup|invite)/.test(location.hash);
+const IS_RECOVERY     = /type=recovery/.test(location.hash);
+
 let sb = null;                      // Supabase client
 let me = null;                      // ແຖວຈາກ app_users
 const db = {                        // ຂໍ້ມູນທີ່ໂຫຼດມາ
@@ -144,7 +148,9 @@ function loginScreen() {
   function authError(err) {
     const m = err?.message || '';
     if (/Invalid login credentials/i.test(m))
-      return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ';
+      return 'ອີເມວ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ. ຖ້າຍັງບໍ່ເຄີຍຕັ້ງລະຫັດຜ່ານ '
+           + '(ເຄີຍເຂົ້າດ້ວຍລິ້ງທາງອີເມວເທົ່ານັ້ນ) ໃຫ້ກົດ “ລືມລະຫັດ? ສົ່ງລິ້ງທາງອີເມວ” '
+           + 'ຂ້າງລຸ່ມ ແລ້ວຕັ້ງລະຫັດຜ່ານດ້ວຍປຸ່ມ 🔑 ຫຼັງເຂົ້າລະບົບ';
     if (/Email not confirmed/i.test(m))
       return 'ຍັງບໍ່ໄດ້ຢືນຢັນອີເມວ — ກວດກ່ອງອີເມວຂອງທ່ານ ຫຼື ແຈ້ງຜູ້ດູແລໃຫ້ປິດການຢືນຢັນອີເມວ';
     if (/User already registered|already been registered/i.test(m))
@@ -748,6 +754,52 @@ function wireForms() {
   $('#btn-refresh').onclick        = () => refresh();
   $('#btn-logout').onclick         = signOut;
   $('#btn-logout-denied').onclick  = signOut;
+  $('#btn-passwd').onclick         = () => openPasswordDialog();
+}
+
+/* ── ຕັ້ງ / ປ່ຽນລະຫັດຜ່ານ ─────────────────────────────────────────────── */
+
+let passwdWired = false;
+
+function openPasswordDialog(force = false) {
+  const dlg = $('#dlg-passwd');
+  $('#pw-new').value = '';
+  $('#pw-confirm').value = '';
+  alertBox('passwd-alert', '');
+
+  // ມາຈາກລິ້ງຕັ້ງລະຫັດໃໝ່ → ບັງຄັບໃຫ້ຕັ້ງກ່ອນ ປິດບໍ່ໄດ້
+  $('#btn-passwd-cancel').hidden = force;
+
+  if (!passwdWired) {
+    passwdWired = true;
+
+    $('#btn-passwd-cancel').onclick = () => dlg.close();
+    dlg.addEventListener('cancel', e => { if ($('#btn-passwd-cancel').hidden) e.preventDefault(); });
+
+    $('#form-passwd').addEventListener('submit', async e => {
+      e.preventDefault();
+      const pw = $('#pw-new').value;
+      const c2 = $('#pw-confirm').value;
+      if (pw.length < 6)  return alertBox('passwd-alert', 'ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ');
+      if (pw !== c2)      return alertBox('passwd-alert', 'ລະຫັດຜ່ານສອງຊ່ອງບໍ່ຄືກັນ');
+
+      const btn = $('#btn-passwd-save');
+      btn.disabled = true; btn.textContent = 'ກຳລັງບັນທຶກ…';
+      const { error } = await sb.auth.updateUser({ password: pw });
+      btn.disabled = false; btn.textContent = 'ບັນທຶກ';
+
+      if (error) {
+        return alertBox('passwd-alert',
+          /same.*password/i.test(error.message)
+            ? 'ລະຫັດຜ່ານໃໝ່ຊ້ຳກັບອັນເກົ່າ — ຕັ້ງອັນອື່ນ'
+            : friendlyError(error));
+      }
+      dlg.close();
+      toast('ຕັ້ງລະຫັດຜ່ານແລ້ວ — ເທື່ອໜ້າເຂົ້າດ້ວຍອີເມວ + ລະຫັດຜ່ານໄດ້ເລີຍ');
+    });
+  }
+
+  dlg.showModal();
 }
 
 /* ============================================================================
@@ -790,6 +842,13 @@ async function startApp(session) {
   show('screen-app');
   wireForms();
   await refresh(true);
+
+  // ເຂົ້າມາທາງລິ້ງອີເມວ = ອາດຍັງບໍ່ມີລະຫັດຜ່ານ → ຊວນໃຫ້ຕັ້ງ
+  if (IS_RECOVERY) {
+    openPasswordDialog(true);
+  } else if (ARRIVED_BY_LINK) {
+    setTimeout(() => toast('ຢາກເຂົ້າໄວກວ່ານີ້? ກົດ 🔑 ຂ້າງເທິງເພື່ອຕັ້ງລະຫັດຜ່ານ'), 1200);
+  }
 }
 
 async function main() {
