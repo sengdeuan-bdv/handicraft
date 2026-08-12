@@ -15,5 +15,9 @@
 window.HANDICRAFT_CONFIG = {
   SUPABASE_URL: "https://vlazkjklsqhcwsmggrqq.supabase.co",
 
-  SUPABASE_ANON_KEY: "sb_publishable_vr3H2kaBGnh0Rf2PEc9opg_1xoY0LDs"
+  SUPABASE_ANON_KEY: "sb_publishable_vr3H2kaBGnh0Rf2PEc9opg_1xoY0LDs",
+
+  // ໂໝດຜູ້ໃຊ້ຄົນດຽວ: ໜ້າ login ຈະຖາມແຕ່ລະຫັດຜ່ານ ບໍ່ຕ້ອງພິມອີເມວ
+  // ຢາກກັບໄປໃຫ້ພິມອີເມວນຳ (ຕອນມີພະນັກງານຫຼາຍຄົນ) → ຕັ້ງເປັນ "" ຫວ່າງ
+  LOGIN_EMAIL: "sengdeuan.boutdavong@gmail.com"
 };

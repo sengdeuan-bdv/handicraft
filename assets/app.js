@@ -146,8 +146,28 @@ function loginScreen() {
       + ' — ກວດວ່າເປີດ GitHub provider ໃນ Supabase → Authentication → Providers ແລ້ວບໍ');
   };
 
+  // ໂໝດຜູ້ໃຊ້ຄົນດຽວ — ຊ່ອນຊ່ອງອີເມວ ແລ້ວໃຊ້ຄ່າຈາກ config ແທນ
+  const fixedEmail = (window.HANDICRAFT_CONFIG?.LOGIN_EMAIL || '').trim();
+  let  emailHidden = !!fixedEmail;
+
+  function applyEmailMode() {
+    $('#field-email').hidden        = emailHidden;
+    $('#login-email').required      = !emailHidden;
+    $('#btn-other-email').hidden    = !emailHidden;
+    $('#login-note').innerHTML = emailHidden
+      ? `ເຂົ້າໃນນາມ <strong>${esc(fixedEmail)}</strong>`
+      : 'ໃສ່ອີເມວ ແລະ ລະຫັດຜ່ານທີ່ໄດ້ຮັບຈາກຜູ້ດູແລລະບົບ';
+  }
+  applyEmailMode();
+
+  $('#btn-other-email').onclick = () => {
+    emailHidden = false;
+    applyEmailMode();
+    $('#login-email').focus();
+  };
+
   const creds = () => ({
-    email: $('#login-email').value.trim(),
+    email: emailHidden ? fixedEmail : $('#login-email').value.trim(),
     password: $('#login-password').value
   });
 
@@ -188,7 +208,7 @@ function loginScreen() {
 
   // ── ລິ້ງທາງອີເມວ (ສຳຮອງ) ────────────────────────────────────────────
   $('#btn-magic').onclick = async () => {
-    const email = $('#login-email').value.trim();
+    const email = creds().email;
     if (!email) return alertBox('login-alert', 'ກະລຸນາໃສ່ອີເມວກ່ອນ');
     alertBox('login-alert', '');
     await withButton($('#btn-magic'), 'ກຳລັງສົ່ງ…', async () => {
